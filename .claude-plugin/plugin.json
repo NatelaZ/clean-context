@@ -2,7 +2,7 @@
   "name": "clean-context",
   "displayName": "Clean Context",
   "description": "Аудит и обратимая уборка стартовой платы за контекст Claude Code: скилы, агенты, MCP-серверы, плагины, CLAUDE.md, hooks. Сверяет с реальной статистикой использования и предлагает отключить лишнее.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "author": {
     "name": "Natela Zubchenko",
     "url": "https://github.com/NatelaZ"
