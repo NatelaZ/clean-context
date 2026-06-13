@@ -10,7 +10,7 @@
       "name": "clean-context",
       "source": "./",
       "description": "Аудит и обратимая уборка стартовой платы за контекст Claude Code.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "author": {
         "name": "Natela Zubchenko",
         "url": "https://github.com/NatelaZ"
