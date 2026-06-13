@@ -14,6 +14,7 @@ export function defaultConfig(home = os.homedir()) {
     settingsPath: path.join(claude, 'settings.json'),
     claudeJsonPath: path.join(home, '.claude.json'),
     projectsDir: path.join(claude, 'projects'),
+    pluginsCacheDir: path.join(claude, 'plugins', 'cache'),
     staleDays: 30,
   };
 }

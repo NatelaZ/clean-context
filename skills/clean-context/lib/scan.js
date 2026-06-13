@@ -62,12 +62,49 @@ export function scanMcp(config) {
   return items;
 }
 
+// Собирает name+description всех скилов плагина из кеша, дедуп по имени папки скила
+// (в кеше может лежать несколько версий — не задваиваем вес).
+function pluginSkillsDescText(cacheDir, marketplace, plugin) {
+  if (!cacheDir) return '';
+  const pluginDir = path.join(cacheDir, marketplace, plugin);
+  let versions = [];
+  try { versions = fs.readdirSync(pluginDir, { withFileTypes: true }); } catch { return ''; }
+  const bySkill = new Map(); // имя скила -> descText
+  for (const v of versions) {
+    if (!v.isDirectory()) continue;
+    const skillsDir = path.join(pluginDir, v.name, 'skills');
+    let skillDirs = [];
+    try { skillDirs = fs.readdirSync(skillsDir, { withFileTypes: true }); } catch { continue; }
+    for (const s of skillDirs) {
+      if (!s.isDirectory() || bySkill.has(s.name)) continue;
+      const skillMd = path.join(skillsDir, s.name, 'SKILL.md');
+      let raw;
+      try { raw = fs.readFileSync(skillMd, 'utf8'); } catch { continue; }
+      const fm = parseFrontmatter(raw);
+      bySkill.set(s.name, [fm.name || s.name, fm.description || ''].join('\n'));
+    }
+  }
+  return [...bySkill.values()].join('\n');
+}
+
 export function scanPlugins(config) {
   const items = [];
   let settings = {};
   try { settings = JSON.parse(fs.readFileSync(config.settingsPath, 'utf8')); } catch {}
   for (const [name, enabled] of Object.entries(settings.enabledPlugins || {})) {
-    items.push({ category: 'plugin', name, status: enabled ? 'active' : 'disabled', path: config.settingsPath, descText: '' });
+    const status = enabled ? 'active' : 'disabled';
+    // Вес — только активным: отключённый плагин не грузится (стартовая плата = 0),
+    // и это держит total согласованным с реальным /context.
+    let descText = '';
+    if (enabled) {
+      const at = name.lastIndexOf('@');
+      if (at > 0) {
+        const plugin = name.slice(0, at);
+        const marketplace = name.slice(at + 1);
+        descText = pluginSkillsDescText(config.pluginsCacheDir, marketplace, plugin);
+      }
+    }
+    items.push({ category: 'plugin', name, status, path: config.settingsPath, descText });
   }
   return items;
 }

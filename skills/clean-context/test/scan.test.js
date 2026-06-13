@@ -116,3 +116,54 @@ test('scanInventory: на заполненных фикстурах возвра
   const cats = new Set(items.map(i => i.category));
   for (const c of ['skill', 'agent', 'mcp', 'plugin', 'claudemd', 'hook']) assert.ok(cats.has(c), `missing category ${c}`);
 });
+
+test('scanPlugins приписывает активному плагину вес скилов из кеша', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-plug-'));
+  const settingsPath = path.join(dir, 'settings.json');
+  fs.writeFileSync(settingsPath, JSON.stringify({
+    enabledPlugins: { 'demo@mkt': true, 'off@mkt': false },
+  }));
+  const cache = path.join(dir, 'cache');
+  const mkSkill = (root, sub, name, desc) => {
+    const d = path.join(root, 'skills', sub);
+    fs.mkdirSync(d, { recursive: true });
+    fs.writeFileSync(path.join(d, 'SKILL.md'), `---\nname: ${name}\ndescription: ${desc}\n---\nbody`);
+  };
+  mkSkill(path.join(cache, 'mkt', 'demo', '1.0.0'), 'alpha', 'alpha', 'Alpha does things');
+  mkSkill(path.join(cache, 'mkt', 'demo', '1.0.0'), 'beta', 'beta', 'Beta does things');
+  mkSkill(path.join(cache, 'mkt', 'off', '1.0.0'), 'gamma', 'gamma', 'Gamma does things');
+
+  const items = scanPlugins({ settingsPath, pluginsCacheDir: cache });
+  const demo = items.find((i) => i.name === 'demo@mkt');
+  const off = items.find((i) => i.name === 'off@mkt');
+  assert.ok(demo.descText.includes('Alpha does things'));
+  assert.ok(demo.descText.includes('Beta does things'));
+  assert.equal(off.descText, '');
+});
+
+test('scanPlugins дедуплицирует скилы между версиями кеша', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-plug2-'));
+  const settingsPath = path.join(dir, 'settings.json');
+  fs.writeFileSync(settingsPath, JSON.stringify({ enabledPlugins: { 'demo@mkt': true } }));
+  const cache = path.join(dir, 'cache');
+  const mkSkill = (root, sub, name, desc) => {
+    const d = path.join(root, 'skills', sub);
+    fs.mkdirSync(d, { recursive: true });
+    fs.writeFileSync(path.join(d, 'SKILL.md'), `---\nname: ${name}\ndescription: ${desc}\n---\nbody`);
+  };
+  mkSkill(path.join(cache, 'mkt', 'demo', 'aaa'), 'alpha', 'alpha', 'Alpha unique text');
+  mkSkill(path.join(cache, 'mkt', 'demo', '2.0.0'), 'alpha', 'alpha', 'Alpha unique text');
+  const items = scanPlugins({ settingsPath, pluginsCacheDir: cache });
+  const demo = items.find((i) => i.name === 'demo@mkt');
+  const occurrences = demo.descText.split('Alpha unique text').length - 1;
+  assert.equal(occurrences, 1);
+});
+
+test('scanPlugins не падает, если кеша плагина нет', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-plug3-'));
+  const settingsPath = path.join(dir, 'settings.json');
+  fs.writeFileSync(settingsPath, JSON.stringify({ enabledPlugins: { 'ghost@mkt': true } }));
+  const items = scanPlugins({ settingsPath, pluginsCacheDir: path.join(dir, 'nope') });
+  const ghost = items.find((i) => i.name === 'ghost@mkt');
+  assert.equal(ghost.descText, '');
+});
