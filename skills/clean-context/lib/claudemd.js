@@ -1,16 +1,21 @@
 import { estimateTokens } from './tokens.js';
 
+const MIN_DUP_CHARS = 40;
+
 // Режет markdown по заголовкам #..######. Текст до первого заголовка — преамбула
 // (heading: null). Пустые/пробельные секции отбрасываются.
 export function splitSections(content) {
-  const lines = (content || '').split('\n');
+  const lines = (content || '').replace(/\r\n/g, '\n').split('\n');
   const sections = [];
   let cur = { heading: null, level: 0, line: 1, lines: [] };
+  let inFence = false;
   lines.forEach((ln, i) => {
-    const m = ln.match(/^(#{1,6})\s+(.*)$/);
+    if (ln.startsWith('```')) { inFence = !inFence; cur.lines.push(ln); return; }
+    const m = !inFence && ln.match(/^(#{1,6})\s+(.*)$/);
     if (m) {
       sections.push(cur);
-      cur = { heading: m[2].trim(), level: m[1].length, line: i + 1, lines: [ln] };
+      const heading = m[2].trim().replace(/\s+#+$/, '').trim();
+      cur = { heading, level: m[1].length, line: i + 1, lines: [ln] };
     } else {
       cur.lines.push(ln);
     }
@@ -42,7 +47,7 @@ export function findDuplicateSections(files) {
   for (const f of files) {
     for (const s of f.sections) {
       const key = normalize(s.text);
-      if (key.length < 40) continue; // крошечные секции не считаем дублями
+      if (key.length < MIN_DUP_CHARS) continue; // крошечные секции не считаем дублями
       if (!byNorm.has(key)) byNorm.set(key, { heading: s.heading, tokens: s.tokens, files: [] });
       byNorm.get(key).files.push(f.name);
     }

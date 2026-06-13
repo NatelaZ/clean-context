@@ -49,3 +49,22 @@ test('findDuplicateSections: крошечные секции игнорирую�
   const f2 = { name: 'b', sections: splitSections('## H\nshort') };
   assert.deepEqual(findDuplicateSections([f1, f2]), []);
 });
+
+test('splitSections: заголовки внутри code-fence не считаются секциями', () => {
+  const md = '## Real\nbefore\n```\n## fake heading in fence\ncode\n```\nafter';
+  const secs = splitSections(md);
+  assert.equal(secs.length, 1);
+  assert.equal(secs[0].heading, 'Real');
+  assert.ok(secs[0].text.includes('after'));
+});
+
+test('splitSections: CRLF обрабатывается как LF', () => {
+  const secs = splitSections('preamble\r\n## Section A\r\nbody');
+  assert.equal(secs.length, 2);
+  assert.equal(secs[1].heading, 'Section A');
+});
+
+test('splitSections: закрывающие # в ATX-заголовке отбрасываются', () => {
+  const secs = splitSections('## Title ##\nbody');
+  assert.equal(secs[0].heading, 'Title');
+});

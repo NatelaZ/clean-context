@@ -2,6 +2,8 @@ import { defaultConfig } from '../lib/paths.js';
 import { scanClaudeMd } from '../lib/scan.js';
 import { analyzeFile, findDuplicateSections } from '../lib/claudemd.js';
 
+const TOP_SECTIONS = 8;
+
 const config = defaultConfig();
 const items = scanClaudeMd(config);
 if (items.length === 0) {
@@ -9,6 +11,7 @@ if (items.length === 0) {
   process.exit(0);
 }
 
+// для claudemd-элементов descText — это полное содержимое файла (см. scan.js: scanClaudeMd)
 const analyses = items.map((it) => analyzeFile(it.name, it.descText)).sort((a, b) => b.total - a.total);
 
 const lines = ['# Разбор CLAUDE.md', ''];
@@ -18,7 +21,7 @@ lines.push('');
 
 for (const a of analyses) {
   lines.push(`## ${a.name} — ~${a.total} ток.`);
-  for (const s of a.top.slice(0, 8)) {
+  for (const s of a.top.slice(0, TOP_SECTIONS)) {
     lines.push(`  - ${s.heading || '(преамбула)'} — ~${s.tokens} ток.`);
   }
   lines.push('');
