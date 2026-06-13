@@ -1,13 +1,13 @@
 import { totalsByCategory } from './cost.js';
 
-export function renderReport(result, items) {
+export function renderReport(result, items, calibration = null) {
   const lines = [];
   const total = items.reduce((s, i) => s + (i.estTokens || 0), 0);
   const totals = totalsByCategory(items);
 
   lines.push('# Клинер контекста — отчёт');
   lines.push('');
-  lines.push(`Стартовая плата (оценка): ~${total} токенов`);
+  lines.push(`Стартовая плата (оценка; откалибруй по \`/context\`): ~${total} токенов`);
   lines.push('Разбивка по категориям:');
   for (const [cat, t] of Object.entries(totals).sort((a, b) => b[1] - a[1])) {
     lines.push(`  - ${cat}: ~${t}`);
@@ -41,6 +41,19 @@ export function renderReport(result, items) {
     lines.push('');
   }
 
+  lines.push('## Калибровка оценки');
+  const factors = (calibration && calibration.factors) || {};
+  const keys = Object.keys(factors);
+  if (keys.length) {
+    const parts = keys.map((k) => `${k} ×${factors[k]}`).join(', ');
+    lines.push(`  - ✓ откалибровано: ${parts}`);
+    lines.push('  - Цифры выше уже учитывают поправку. Повтори при заметном расхождении с `/context`.');
+  } else {
+    lines.push('  - Калибровка не настроена — оценка приблизительная.');
+    lines.push('  - Открой `/context`, сверь строку (напр. «Custom agents: 2.1k»), затем:');
+    lines.push('    `node "SKILLDIR/bin/calibrate.js" agent 2100`');
+  }
+  lines.push('');
   lines.push('## Гигиена контекста');
   lines.push('  - Одна сессия = одна задача; /clear между задачами (история — главный пожиратель).');
   lines.push('  - Тяжёлое чтение — через субагентов: у них свой контекст.');
