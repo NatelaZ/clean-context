@@ -28,7 +28,7 @@ try {
   const d = decideAlert(result, lastAlert, now);
   if (d.alert) {
     fs.writeFileSync(alertPath, JSON.stringify({ signature: d.signature, at: now }, null, 2));
-    process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: d.message } }));
+    process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: d.message } }) + '\n');
   }
 } catch {
   // Никогда не ломаем старт сессии.

@@ -29,6 +29,7 @@ test('та же сигнатура внутри окна -> нет алерта'
   const sig = signatureOf(r);
   const d = decideAlert(r, { signature: sig, at: 1000 }, 1000 + DAY / 2);
   assert.equal(d.alert, false);
+  assert.equal(d.message, '');
 });
 
 test('та же сигнатура после суток -> алерт', () => {
