@@ -13,6 +13,7 @@ export function defaultConfig(home = os.homedir()) {
     mcpDisabledDir: path.join(claude, 'mcp-disabled'),
     settingsPath: path.join(claude, 'settings.json'),
     claudeJsonPath: path.join(home, '.claude.json'),
+    projectsDir: path.join(claude, 'projects'),
     staleDays: 30,
   };
 }

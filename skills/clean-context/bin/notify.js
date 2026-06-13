@@ -5,6 +5,7 @@ import { defaultConfig } from '../lib/paths.js';
 import { scanInventory } from '../lib/scan.js';
 import { addCosts } from '../lib/cost.js';
 import { loadUsage, addUsage } from '../lib/usage.js';
+import { scanAgentUsage, addAgentUsage } from '../lib/agentusage.js';
 import { recommend } from '../lib/recommend.js';
 import { decideAlert } from '../lib/alarm.js';
 
@@ -14,6 +15,7 @@ try {
   let items = scanInventory(config);
   items = addCosts(items);
   items = addUsage(items, loadUsage(config.claudeJsonPath), now);
+  items = addAgentUsage(items, scanAgentUsage(config.projectsDir, { now }), now);
   const result = recommend(items, { staleDays: config.staleDays });
 
   const skillRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
