@@ -14,6 +14,13 @@ export function renderReport(result, items) {
   }
   lines.push('');
 
+  const top = [...items].sort((a, b) => (b.estTokens || 0) - (a.estTokens || 0)).slice(0, 5);
+  if (top.length) {
+    lines.push('Топ пожирателей (отдельные пункты):');
+    for (const it of top) lines.push(`  - ${it.category}/${it.name} — ~${it.estTokens || 0} ток.`);
+    lines.push('');
+  }
+
   const reclaim = result.toDisable.reduce((s, i) => s + (i.estTokens || 0), 0);
   lines.push(`## Рекомендую отключить (вернём ~${reclaim} токенов)`);
   if (result.toDisable.length === 0) lines.push('  — нечего, всё используется. 👍');

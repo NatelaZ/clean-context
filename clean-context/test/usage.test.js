@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { addUsage } from '../lib/usage.js';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { addUsage, loadUsage } from '../lib/usage.js';
 
 const NOW = 1781346971761;
 const DAY = 86400000;
@@ -28,4 +31,16 @@ test('плагин берёт usage из pluginUsage', () => {
   const usage = { skillUsage: {}, pluginUsage: { 'ralph-loop@m': { usageCount: 880, lastUsedAt: NOW } } };
   const [it] = addUsage([{ category: 'plugin', name: 'ralph-loop@m' }], usage, NOW);
   assert.equal(it.usageCount, 880);
+});
+
+test('loadUsage: читает skillUsage/pluginUsage', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-usage-'));
+  const p = path.join(root, '.claude.json');
+  fs.writeFileSync(p, JSON.stringify({ skillUsage: { a: { usageCount: 1 } }, pluginUsage: { 'b@m': { usageCount: 2 } } }));
+  const u = loadUsage(p);
+  assert.equal(u.skillUsage.a.usageCount, 1);
+  assert.equal(u.pluginUsage['b@m'].usageCount, 2);
+});
+test('loadUsage: отсутствующий файл -> пустые объекты', () => {
+  assert.deepEqual(loadUsage('/no/such/file-xyz.json'), { skillUsage: {}, pluginUsage: {} });
 });

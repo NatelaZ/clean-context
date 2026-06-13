@@ -20,7 +20,8 @@ if (names.length === 0) {
   console.error('Укажи имена для отключения: node bin/apply.js <name> [<name> ...]');
   process.exit(1);
 }
-const pool = [...audit.result.toDisable, ...audit.result.manualReview];
+const pool = [...audit.result.toDisable, ...audit.result.manualReview]
+  .filter((it) => it.category !== 'mcp' || !it.scope || it.scope === 'global');
 const selections = names
   .map((n) => pool.find((it) => it.name === n))
   .filter(Boolean)

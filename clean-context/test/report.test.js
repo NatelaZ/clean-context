@@ -34,3 +34,16 @@ test('рендерит секции wrongDirection и manualReview когда н
   assert.match(out, /решить вручную/);
   assert.match(out, /arhitektor/);
 });
+
+test('рендерит топ пожирателей, крупнейший пункт первым', () => {
+  const items = [
+    { category: 'claudemd', name: '/p/CLAUDE.md', estTokens: 10000 },
+    { category: 'skill', name: 'small', estTokens: 10 },
+  ];
+  const result = { toDisable: [], wrongDirection: [], manualReview: [], keep: [] };
+  const out = renderReport(result, items);
+  assert.match(out, /Топ пожирателей/);
+  const topIdx = out.indexOf('Топ пожирателей');
+  assert.ok(out.indexOf('/p/CLAUDE.md') > topIdx);
+  assert.ok(out.indexOf('/p/CLAUDE.md') < out.indexOf('small')); // крупнейший выше
+});
