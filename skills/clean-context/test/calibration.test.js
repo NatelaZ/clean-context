@@ -87,3 +87,13 @@ test('runCalibrate бросает понятную ошибку без last-audi
   assert.throws(() => runCalibrate({ stateDir: dir, category: 'skill', realTokens: 100, now: 1 }),
     /аудит/i);
 });
+
+test('runCalibrate бросает ошибку и не пишет файл, если категории нет в аудите', () => {
+  const dir = tmpDir();
+  fs.writeFileSync(path.join(dir, 'last-audit.json'), JSON.stringify({
+    items: [{ category: 'skill', estTokens: 100 }],
+  }));
+  assert.throws(() => runCalibrate({ stateDir: dir, category: 'hook', realTokens: 50, now: 1 }),
+    /не найдена/);
+  assert.equal(fs.existsSync(path.join(dir, 'calibration.json')), false);
+});

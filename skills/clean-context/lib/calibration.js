@@ -40,6 +40,9 @@ export function runCalibrate({ stateDir, category, realTokens, now }) {
     throw new Error('Нет последнего аудита (.state/last-audit.json). Сначала запусти audit.js.');
   }
   const est = categoryEstimate(audit.items, category);
+  if (!(est > 0)) {
+    throw new Error(`Категория "${category}" не найдена в последнем аудите (оценка 0). Сначала запусти audit.js.`);
+  }
   const factor = computeFactor(realTokens, est);
   const cal = loadCalibration(stateDir);
   cal.factors[category] = factor;
