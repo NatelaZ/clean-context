@@ -27,7 +27,8 @@ export function computeFactor(realTokens, estTokens) {
 export function categoryEstimate(items, category) {
   let sum = 0;
   for (const it of items || []) {
-    if (it.category === category) sum += it.estTokens || 0;
+    // По калибровке считаем СЫРУЮ оценку; estTokens — фолбэк для старых аудитов.
+    if (it.category === category) sum += (it.estTokensRaw ?? it.estTokens) || 0;
   }
   return sum;
 }

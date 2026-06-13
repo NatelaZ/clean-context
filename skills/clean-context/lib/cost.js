@@ -6,7 +6,8 @@ export function addCosts(items, factors = {}) {
     const factor = factors[it.category];
     // нет коэффициента (или 0) → берём оценку без поправки
     const estTokens = factor ? Math.round(base * factor) : base;
-    return { ...it, estTokens };
+    // estTokensRaw — всегда сырая оценка: по ней калибруют, иначе повторная калибровка дрейфует
+    return { ...it, estTokens, estTokensRaw: base };
   });
 }
 
