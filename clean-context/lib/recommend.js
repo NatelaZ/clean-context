@@ -1,6 +1,8 @@
 // Классифицирует инвентарь. Авто-отключение разрешено только скилам и MCP
 // (низкий риск, обратимо). Плагины — рекомендация. Агенты — только manualReview
 // (нет прямой статистики использования).
+const WRONG_DIR_THRESHOLD = 20;
+
 export function recommend(items, opts = {}) {
   const staleDays = opts.staleDays ?? 30;
   const toDisable = [];
@@ -9,7 +11,7 @@ export function recommend(items, opts = {}) {
   const keep = [];
 
   for (const it of items) {
-    const canAuto = it.category === 'skill' || it.category === 'mcp';
+    const canAuto = it.category === 'skill' || it.category === 'mcp'; // mcp reaches toDisable only in phase 2 (no usage data yet)
     const hasUsageData = it.category === 'skill' || it.category === 'plugin';
 
     if (it.status === 'active' && hasUsageData && it.usageCount !== null) {
@@ -24,7 +26,7 @@ export function recommend(items, opts = {}) {
       }
     }
 
-    if (it.status === 'disabled' && it.usageCount && it.usageCount > 20) {
+    if (it.status === 'disabled' && it.usageCount !== null && it.usageCount > WRONG_DIR_THRESHOLD) {
       wrongDirection.push({ ...it, reason: `выключен, но использован ${it.usageCount} раз` });
       continue;
     }

@@ -20,3 +20,17 @@ test('пустой toDisable -> дружелюбная строка', () => {
   const out = renderReport({ toDisable: [], wrongDirection: [], manualReview: [], keep: [] }, []);
   assert.match(out, /нечего/);
 });
+
+test('рендерит секции wrongDirection и manualReview когда непусты', () => {
+  const result = {
+    toDisable: [],
+    wrongDirection: [{ category: 'plugin', name: 'ralph', reason: 'выключен, но использован 880 раз' }],
+    manualReview: [{ category: 'agent', name: 'arhitektor', estTokens: 50 }],
+    keep: [],
+  };
+  const out = renderReport(result, []);
+  assert.match(out, /Возможно отключено нужное/);
+  assert.match(out, /ralph/);
+  assert.match(out, /решить вручную/);
+  assert.match(out, /arhitektor/);
+});

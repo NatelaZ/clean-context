@@ -1,5 +1,7 @@
 import fs from 'node:fs';
 
+const MS_PER_DAY = 86_400_000;
+
 export function loadUsage(claudeJsonPath) {
   try {
     const d = JSON.parse(fs.readFileSync(claudeJsonPath, 'utf8'));
@@ -16,14 +18,13 @@ function matchSuffix(map, name) {
 }
 
 export function addUsage(items, usage, now) {
-  const DAY = 86400000;
   return items.map((it) => {
     let rec = null;
     if (it.category === 'skill') rec = usage.skillUsage[it.name] || matchSuffix(usage.skillUsage, it.name);
     else if (it.category === 'plugin') rec = usage.pluginUsage[it.name];
     const usageCount = rec ? (rec.usageCount ?? 0) : null;
     const lastUsedAt = rec ? (rec.lastUsedAt ?? null) : null;
-    const daysSinceUse = lastUsedAt ? Math.floor((now - lastUsedAt) / DAY) : null;
+    const daysSinceUse = lastUsedAt ? Math.floor((now - lastUsedAt) / MS_PER_DAY) : null;
     return { ...it, usageCount, lastUsedAt, daysSinceUse };
   });
 }
