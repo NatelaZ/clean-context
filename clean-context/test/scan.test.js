@@ -3,8 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { scanSkills, scanAgents } from '../lib/scan.js';
-import { scanMcp, scanPlugins, scanClaudeMd, scanInventory } from '../lib/scan.js';
+import { scanSkills, scanAgents, scanMcp, scanPlugins, scanClaudeMd, scanHooks, scanInventory } from '../lib/scan.js';
 
 function tmpRoot() { return fs.mkdtempSync(path.join(os.tmpdir(), 'cc-scan-')); }
 function writeSkill(base, name, desc) {
@@ -79,6 +78,16 @@ test('scanClaudeMd: глобальный CLAUDE.md', () => {
   assert.ok(items[0].descText.includes('правила проекта'));
 });
 
+test('scanHooks: по ключам hooks из settings.json', () => {
+  const root = tmpRoot();
+  const settingsPath = path.join(root, 'settings.json');
+  fs.writeFileSync(settingsPath, JSON.stringify({ hooks: { Stop: [{ hooks: [] }], UserPromptSubmit: [{ hooks: [] }] } }));
+  const items = scanHooks({ settingsPath });
+  const names = items.map(i => i.name).sort();
+  assert.deepEqual(names, ['Stop', 'UserPromptSubmit']);
+  assert.equal(items[0].category, 'hook');
+});
+
 test('scanInventory: объединяет категории без падения на пустых путях', () => {
   const root = tmpRoot();
   const items = scanInventory({
@@ -88,4 +97,22 @@ test('scanInventory: объединяет категории без падени
     settingsPath: path.join(root, 'missing-settings.json'),
   });
   assert.ok(Array.isArray(items));
+});
+
+test('scanInventory: на заполненных фикстурах возвращает все категории', () => {
+  const root = tmpRoot();
+  const skillsDir = path.join(root, 'skills');
+  writeSkill(skillsDir, 'alpha', 'Alpha');
+  const agentsDir = path.join(root, 'agents');
+  writeAgent(agentsDir, 'ag', 'Agent');
+  const claudeDir = path.join(root, '.claude');
+  fs.mkdirSync(claudeDir, { recursive: true });
+  fs.writeFileSync(path.join(claudeDir, 'CLAUDE.md'), 'rules');
+  const claudeJsonPath = path.join(root, '.claude.json');
+  fs.writeFileSync(claudeJsonPath, JSON.stringify({ mcpServers: { pencil: {} }, projects: {} }));
+  const settingsPath = path.join(root, 'settings.json');
+  fs.writeFileSync(settingsPath, JSON.stringify({ enabledPlugins: { 'p@m': true }, hooks: { Stop: [{}] } }));
+  const items = scanInventory({ skillsDir, agentsDir, claudeDir, claudeJsonPath, settingsPath });
+  const cats = new Set(items.map(i => i.category));
+  for (const c of ['skill', 'agent', 'mcp', 'plugin', 'claudemd', 'hook']) assert.ok(cats.has(c), `missing category ${c}`);
 });

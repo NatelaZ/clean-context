@@ -30,7 +30,7 @@ export function scanAgents(config) {
   for (const [dir, status] of [[config.agentsDir, 'active'], [config.agentsDisabledDir, 'disabled']]) {
     if (!dir || !fs.existsSync(dir)) continue;
     for (const file of fs.readdirSync(dir)) {
-      if (!file.endsWith('.md')) continue;
+      if (!file.endsWith('.md') || file.startsWith('.')) continue;
       const p = path.join(dir, file);
       const fm = parseFrontmatter(fs.readFileSync(p, 'utf8'));
       const name = fm.name || file.replace(/\.md$/, '');
@@ -46,6 +46,8 @@ export function scanMcp(config) {
   try { data = JSON.parse(fs.readFileSync(config.claudeJsonPath, 'utf8')); } catch {}
   const addServers = (servers, scope) => {
     for (const [name, cfg] of Object.entries(servers || {})) {
+      // scope ('global' | <project path>) is an intentional extra field for reporting;
+      // downstream stages preserve it via spread and never iterate Item keys.
       items.push({ category: 'mcp', name, status: 'active', scope, path: config.claudeJsonPath, descText: JSON.stringify(cfg) });
     }
   };
