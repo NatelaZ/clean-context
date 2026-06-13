@@ -17,7 +17,7 @@ test('tallyAgents: счёт по агентам и lastUsedAt = макс mtime',
 });
 
 test('tallyAgents: нет вызовов -> пустой объект', () => {
-  assert.deepEqual(tallyAgents([{ mtime: NOW, text: 'no agents here' }]), {});
+  assert.deepEqual(Object.keys(tallyAgents([{ mtime: NOW, text: 'no agents here' }])), []);
 });
 
 test('addAgentUsage: найденный агент получает count + daysSinceUse', () => {

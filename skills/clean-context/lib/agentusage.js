@@ -6,7 +6,7 @@ const MS_PER_DAY = 86_400_000;
 // Чистая агрегация: files = [{ mtime (epoch ms), text }] -> { name: {usageCount, lastUsedAt} }.
 // lastUsedAt = макс mtime файла, в котором агент встретился (без глубокого парсинга — быстро).
 export function tallyAgents(files) {
-  const out = {};
+  const out = Object.create(null);
   const re = /"subagent_type":"([^"]+)"/g;
   for (const f of files) {
     re.lastIndex = 0;

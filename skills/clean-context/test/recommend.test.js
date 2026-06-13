@@ -56,3 +56,11 @@ test('агент без данных (usageCount null) -> manualReview', () => {
   assert.equal(r.manualReview.length, 1);
   assert.equal(r.toDisable.length, 0);
 });
+test('агент с данными: устарел (daysSinceUse > staleDays) -> toDisable auto=false', () => {
+  const r = recommend(
+    [{ category: 'agent', status: 'active', name: 'a', estTokens: 50, usageCount: 2, daysSinceUse: 35 }],
+    { staleDays: 30 },
+  );
+  assert.equal(r.toDisable.length, 1);
+  assert.equal(r.toDisable[0].auto, false);
+});
