@@ -7,5 +7,9 @@ const config = defaultConfig();
 const skillRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const log = path.join(skillRoot, '.state', 'operations.log.jsonl');
 const done = restoreAll(log, config);
-console.log(`Восстановлено операций: ${done.length}`);
-for (const op of done) console.log('  -', op.name, '|', op.type);
+if (done.length === 0) {
+  console.log('Нечего восстанавливать.');
+} else {
+  console.log(`Восстановлено операций: ${done.length}`);
+  for (const op of done) console.log('  -', op.name, '|', op.type);
+}

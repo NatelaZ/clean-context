@@ -7,7 +7,13 @@ import { applyDisable } from '../lib/apply.js';
 const config = defaultConfig();
 const skillRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const stateDir = path.join(skillRoot, '.state');
-const audit = JSON.parse(fs.readFileSync(path.join(stateDir, 'last-audit.json'), 'utf8'));
+let audit;
+try {
+  audit = JSON.parse(fs.readFileSync(path.join(stateDir, 'last-audit.json'), 'utf8'));
+} catch {
+  console.error('Не найден результат аудита (.state/last-audit.json). Сначала запусти bin/audit.js.');
+  process.exit(1);
+}
 
 const names = process.argv.slice(2);
 if (names.length === 0) {
@@ -21,7 +27,10 @@ const selections = names
   .map((it) => ({ category: it.category, name: it.name, path: it.path }));
 
 const missing = names.filter((n) => !pool.some((it) => it.name === n));
-if (missing.length) console.error('Не найдены в последнем аудите:', missing.join(', '));
+if (missing.length) {
+  console.error('Не найдены в последнем аудите:', missing.join(', '));
+  process.exitCode = 1;
+}
 
 const ops = applyDisable(selections, config, path.join(stateDir, 'operations.log.jsonl'));
 console.log(`Отключено: ${ops.length}`);

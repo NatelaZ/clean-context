@@ -21,7 +21,7 @@ export function restoreAll(logPath, config) {
       data.mcpServers = data.mcpServers || {};
       Object.assign(data.mcpServers, restored);
       fs.writeFileSync(op.file, JSON.stringify(data, null, 2) + '\n');
-      fs.rmSync(op.to);
+      fs.rmSync(op.to, { force: true });
     }
     done.push(op);
   }
