@@ -34,7 +34,7 @@ function walk(dir, cb) {
 // Обход логов: только *.jsonl в окне последних windowDays по mtime; читает лишь файлы с 'subagent_type'.
 export function scanAgentUsage(projectsDir, opts = {}) {
   const now = opts.now ?? Date.now();
-  const windowDays = opts.windowDays ?? 120;
+  const windowDays = opts.windowDays ?? 45;
   const cutoff = now - windowDays * MS_PER_DAY;
   const files = [];
   walk(projectsDir, (fp) => {
