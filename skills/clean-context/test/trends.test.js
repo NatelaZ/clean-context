@@ -56,6 +56,7 @@ test('renderTrends: содержит дельту и изменения', () => 
   assert.match(out, /Тренды/);
   assert.match(out, /Добавилось/);
   assert.match(out, /skill\/y/);
+  assert.match(out, /\+50/);
 });
 
 test('recordSnapshot: пишет первый, пропускает идентичный, пишет изменённый', () => {

@@ -22,6 +22,6 @@ const skillRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const stateDir = path.join(skillRoot, '.state');
 fs.mkdirSync(stateDir, { recursive: true });
 fs.writeFileSync(path.join(stateDir, 'last-audit.json'), JSON.stringify({ now, items, result }, null, 2));
-recordSnapshot(path.join(stateDir, 'history.jsonl'), items, now);
+try { recordSnapshot(path.join(stateDir, 'history.jsonl'), items, now); } catch {}
 
 console.log(renderReport(result, items));

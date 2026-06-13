@@ -22,8 +22,9 @@ export function shouldAppend(history, snap, opts = {}) {
   if (!history.length) return true;
   const last = history[history.length - 1];
   if (last.total !== snap.total) return true;
+  // сравнение по порядку ключей: разный порядок даст лишний (но безвредный) снимок
   if (JSON.stringify(last.items) !== JSON.stringify(snap.items)) return true;
-  return snap.at - last.at > throttleMs;
+  return snap.at - last.at > throttleMs; // строго «больше суток»; одинаковый контент в окне уже отсеян выше
 }
 
 export function diffSnapshots(older, newer) {
@@ -42,11 +43,13 @@ export function diffSnapshots(older, newer) {
 }
 
 export function loadHistory(historyPath) {
-  try {
-    return fs.readFileSync(historyPath, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
-  } catch {
-    return [];
-  }
+  let text = '';
+  try { text = fs.readFileSync(historyPath, 'utf8'); } catch { return []; }
+  return text
+    .split('\n')
+    .filter(Boolean)
+    .map((l) => { try { return JSON.parse(l); } catch { return null; } })
+    .filter(Boolean);
 }
 
 export function recordSnapshot(historyPath, items, now, opts = {}) {
@@ -68,7 +71,7 @@ export function renderTrends(history) {
     lines.push('История пуста — запусти аудит, снимки начнут копиться (раз в день).');
     return lines.join('\n');
   }
-  lines.push('Снимки (дата → стартовая плата):');
+  lines.push(`Снимки (последние ${Math.min(history.length, 10)} из ${history.length}, дата → стартовая плата):`);
   for (const s of history.slice(-10)) lines.push(`  ${fmtDate(s.at)} — ~${s.total} ток.`);
   lines.push('');
   const first = history[0];
