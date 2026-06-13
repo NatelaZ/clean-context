@@ -40,3 +40,19 @@ test('toDisable отсортирован по estTokens по убыванию', 
   ]);
   assert.equal(r.toDisable[0].name, 'b');
 });
+
+test('агент с данными: не использован -> toDisable как «спрос» (auto=false)', () => {
+  const r = recommend([{ category: 'agent', status: 'active', name: 'kb-ingest', estTokens: 90, usageCount: 0, daysSinceUse: null }]);
+  assert.equal(r.toDisable.length, 1);
+  assert.equal(r.toDisable[0].auto, false);
+});
+test('агент с данными: используется -> keep', () => {
+  const r = recommend([{ category: 'agent', status: 'active', name: 'arhitektor', estTokens: 180, usageCount: 3, daysSinceUse: 2 }]);
+  assert.equal(r.toDisable.length, 0);
+  assert.equal(r.keep.length, 1);
+});
+test('агент без данных (usageCount null) -> manualReview', () => {
+  const r = recommend([{ category: 'agent', status: 'active', name: 'x', estTokens: 50, usageCount: null, daysSinceUse: null }]);
+  assert.equal(r.manualReview.length, 1);
+  assert.equal(r.toDisable.length, 0);
+});

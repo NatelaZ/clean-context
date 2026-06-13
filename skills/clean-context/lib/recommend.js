@@ -12,7 +12,7 @@ export function recommend(items, opts = {}) {
 
   for (const it of items) {
     const canAuto = it.category === 'skill' || it.category === 'mcp'; // mcp reaches toDisable only in phase 2 (no usage data yet)
-    const hasUsageData = it.category === 'skill' || it.category === 'plugin';
+    const hasUsageData = it.category === 'skill' || it.category === 'plugin' || it.category === 'agent';
 
     if (it.status === 'active' && hasUsageData && it.usageCount !== null) {
       const unused = it.usageCount === 0 || (it.daysSinceUse !== null && it.daysSinceUse > staleDays);
@@ -31,7 +31,7 @@ export function recommend(items, opts = {}) {
       continue;
     }
 
-    if (it.category === 'agent' && it.status === 'active') {
+    if (it.category === 'agent' && it.status === 'active' && it.usageCount === null) {
       manualReview.push(it);
       continue;
     }
