@@ -7,6 +7,7 @@ import { addCosts } from '../lib/cost.js';
 import { loadUsage, addUsage } from '../lib/usage.js';
 import { recommend } from '../lib/recommend.js';
 import { decideAlert } from '../lib/alarm.js';
+import { recordSnapshot } from '../lib/trends.js';
 
 try {
   const config = defaultConfig();
@@ -20,6 +21,7 @@ try {
   const stateDir = path.join(skillRoot, '.state');
   fs.mkdirSync(stateDir, { recursive: true });
   fs.writeFileSync(path.join(stateDir, 'last-audit.json'), JSON.stringify({ now, items, result }, null, 2));
+  recordSnapshot(path.join(stateDir, 'history.jsonl'), items, now);
 
   const alertPath = path.join(stateDir, 'last-alert.json');
   let lastAlert = null;
