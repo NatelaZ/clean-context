@@ -15,3 +15,21 @@ test('totalsByCategory суммирует по категориям', () => {
   assert.equal(t.skill, 10);
   assert.equal(t.agent, 3);
 });
+test('addCosts с пустыми факторами не меняет поведение', () => {
+  const out = addCosts([{ category: 'skill', descText: 'abcd' }], {});
+  assert.equal(out[0].estTokens, 1);
+});
+test('addCosts умножает estTokens на коэффициент категории', () => {
+  const out = addCosts([{ category: 'skill', descText: 'abcdefgh' }], { skill: 2 });
+  // estimateTokens('abcdefgh') = 2; *2 = 4
+  assert.equal(out[0].estTokens, 4);
+});
+test('addCosts с коэффициентом округляет до целого', () => {
+  const out = addCosts([{ category: 'agent', descText: 'abcdefgh' }], { agent: 1.309 });
+  // 2 * 1.309 = 2.618 -> 3
+  assert.equal(out[0].estTokens, 3);
+});
+test('addCosts не трогает категорию без коэффициента', () => {
+  const out = addCosts([{ category: 'mcp', descText: 'abcd' }], { skill: 2 });
+  assert.equal(out[0].estTokens, 1);
+});

@@ -1,7 +1,13 @@
 import { estimateTokens } from './tokens.js';
 
-export function addCosts(items) {
-  return items.map((it) => ({ ...it, estTokens: estimateTokens(it.descText || '') }));
+export function addCosts(items, factors = {}) {
+  return items.map((it) => {
+    const base = estimateTokens(it.descText || '');
+    const factor = factors[it.category];
+    // нет коэффициента (или 0) → берём оценку без поправки
+    const estTokens = factor ? Math.round(base * factor) : base;
+    return { ...it, estTokens };
+  });
 }
 
 export function totalsByCategory(items) {
